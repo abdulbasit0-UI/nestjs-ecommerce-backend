@@ -27,8 +27,7 @@ A production‑ready e‑commerce REST API built with NestJS, TypeORM, and Postg
 
 ## Frontend
 This backend pairs with a React frontend.
-- Frontend repo: https://github.com/your-org/ecommerce-frontend  
-  Replace with your actual repository URL.
+- Frontend repo: https://github.com/abdulbasit0-UI/React-ecommerce-frontend
 
 
 ## Getting Started
