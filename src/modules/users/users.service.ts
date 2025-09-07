@@ -1,5 +1,10 @@
 // src/modules/users/users.service.ts
-import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  Inject,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, MoreThan } from 'typeorm';
 import { User, UserRole } from '../../entities/user.entity';
@@ -8,10 +13,15 @@ import { Order } from '../../entities/order.entity';
 import { Product } from '../../entities/product.entity';
 import { UpdateProfileDto } from '../../dtos/user/update-profile.dto';
 import { CreateAddressDto } from '../../dtos/user/create-address.dto';
-import { PutObjectCommand, DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  PutObjectCommand,
+  DeleteObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuid } from 'uuid';
 import { OrderStatus } from '../../entities/order.entity';
+import { OrderResponseDto } from 'src/dtos/order/order.response.dto';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +37,7 @@ export class UsersService {
     @Inject('S3_CLIENT')
     private s3Client: S3Client,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   // ==================== BASIC USER OPERATIONS ====================
 
@@ -73,10 +83,10 @@ export class UsersService {
     });
   }
 
-
-  
-
-  async updateUserProfile(userId: string, updateDto: UpdateProfileDto): Promise<User> {
+  async updateUserProfile(
+    userId: string,
+    updateDto: UpdateProfileDto,
+  ): Promise<User> {
     const user = await this.getUserProfile(userId);
 
     if (updateDto.name) user.name = updateDto.name;
@@ -91,7 +101,10 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async uploadAvatar(userId: string, file: Express.Multer.File): Promise<string> {
+  async uploadAvatar(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<string> {
     const user = await this.getUserProfile(userId);
 
     // Delete old avatar if exists
@@ -148,18 +161,23 @@ export class UsersService {
     });
   }
 
-  async createUserAddress(userId: string, addressDto: CreateAddressDto): Promise<Address> {
+  async createUserAddress(
+    userId: string,
+    addressDto: CreateAddressDto,
+  ): Promise<Address> {
     const user = await this.getUserProfile(userId);
 
     // If this is the first address, make it default
-    const addressCount = await this.addressRepository.count({ where: { userId } });
+    const addressCount = await this.addressRepository.count({
+      where: { userId },
+    });
     const isDefault = addressCount === 0 ? true : addressDto.isDefault || false;
 
     // If making this default, unset other defaults of the same type
     if (isDefault) {
       await this.addressRepository.update(
         { userId, type: addressDto.type },
-        { isDefault: false }
+        { isDefault: false },
       );
     }
 
@@ -213,7 +231,7 @@ export class UsersService {
     // Unset other defaults of the same type
     await this.addressRepository.update(
       { userId, type: address.type, id: Not(addressId) },
-      { isDefault: false }
+      { isDefault: false },
     );
 
     address.isDefault = true;
@@ -221,32 +239,22 @@ export class UsersService {
   }
 
   // ==================== USER ORDERS OPERATIONS ====================
+  async getMyOrders(
+    userId: string,
+    filters: { page?: number; limit?: number },
+  ): Promise<{ data: OrderResponseDto[]; meta: any }> {
+    const { page = 1, limit = 10 } = filters;
 
-  async getUserOrders(userId: string, filters: {
-    status?: OrderStatus;
-    page?: number;
-    limit?: number;
-  }): Promise<{ data: any[]; meta: any }> {
-    const { status, page = 1, limit = 10 } = filters;
-
-    const queryBuilder = this.orderRepository
-      .createQueryBuilder('order')
-      .leftJoinAndSelect('order.items', 'items')
-      .leftJoinAndSelect('items.product', 'product')
-      .where('order.userId = :userId', { userId })
-      .orderBy('order.createdAt', 'DESC');
-
-    if (status) {
-      queryBuilder.andWhere('order.status = :status', { status });
-    }
-
-    const [orders, total] = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
+    const [orders, total] = await this.orderRepository.findAndCount({
+      where: { userId },
+      relations: ['items', 'items.product'],
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
 
     return {
-      data: orders.map(order => this.mapOrderToResponse(order)),
+      data: orders.map((order) => this.mapOrderToResponse(order)),
       meta: {
         total,
         page,
@@ -256,18 +264,7 @@ export class UsersService {
     };
   }
 
-  async getUserOrder(userId: string, orderId: string): Promise<any> {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId, userId },
-      relations: ['items', 'items.product'],
-    });
-
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    return this.mapOrderToResponse(order);
-  }
+  // Order-related operations moved to OrdersService
 
   async getUserOrderStats(userId: string): Promise<{
     totalOrders: number;
@@ -284,8 +281,12 @@ export class UsersService {
 
     const totalOrders = orders.length;
     const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
-    const pendingOrders = orders.filter(o => o.status === OrderStatus.PENDING).length;
-    const completedOrders = orders.filter(o => o.status === OrderStatus.SHIPPED).length;
+    const pendingOrders = orders.filter(
+      (o) => o.status === OrderStatus.PENDING,
+    ).length;
+    const completedOrders = orders.filter(
+      (o) => o.status === OrderStatus.SHIPPED,
+    ).length;
     const recentOrder = orders[0];
 
     return {
@@ -293,7 +294,9 @@ export class UsersService {
       totalSpent,
       pendingOrders,
       completedOrders,
-      recentOrder: recentOrder ? this.mapOrderToResponse(recentOrder) : undefined,
+      recentOrder: recentOrder
+        ? this.mapOrderToResponse(recentOrder)
+        : undefined,
     };
   }
 
@@ -307,7 +310,7 @@ export class UsersService {
       paidAt: order.paidAt,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
-      items: order.items.map(item => ({
+      items: order.items.map((item) => ({
         id: item.id,
         productId: item.productId,
         productName: item.product.name,
@@ -318,55 +321,16 @@ export class UsersService {
     };
   }
 
-  // ==================== WISHLIST OPERATIONS ====================
+  // ==================== USER NOTIFICATIONS OPERATIONS ====================
 
-  async getUserWishlist(userId: string): Promise<Product[]> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['wishlist'],
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    // For now, we'll implement wishlist as a simple array in user entity
-    // In a real app, you'd have a separate wishlist entity
-    return []; // Implement based on your wishlist structure
-  }
-
-  async addToWishlist(userId: string, productId: string): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    const product = await this.productRepository.findOne({ where: { id: productId } });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    // Implement wishlist logic based on your database structure
-    // For now, this is a placeholder
-  }
-
-  async removeFromWishlist(userId: string, productId: string): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    // Implement wishlist removal logic
-  }
-
-  // ==================== NOTIFICATION OPERATIONS ====================
-
-  async getUserNotifications(userId: string, filters: {
-    page?: number;
-    limit?: number;
-    unread?: boolean;
-  }): Promise<{ data: any[]; meta: any }> {
+  async getUserNotifications(
+    userId: string,
+    filters: {
+      page?: number;
+      limit?: number;
+      unread?: boolean;
+    },
+  ): Promise<{ data: any[]; meta: any }> {
     const { page = 1, limit = 20, unread } = filters;
 
     // This is a placeholder - implement based on your notification system
@@ -382,9 +346,14 @@ export class UsersService {
     };
   }
 
-  async markNotificationAsRead(userId: string, notificationId: string): Promise<void> {
+  async markNotificationAsRead(
+    userId: string,
+    notificationId: string,
+  ): Promise<void> {
     // Implement notification marking logic
-    console.log(`Marked notification ${notificationId} as read for user ${userId}`);
+    console.log(
+      `Marked notification ${notificationId} as read for user ${userId}`,
+    );
   }
 
   async markAllNotificationsAsRead(userId: string): Promise<void> {

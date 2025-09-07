@@ -38,6 +38,7 @@ import { CreateAddressDto } from '../../dtos/user/create-address.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileValidationPipe } from '../../common/pipes/file-validation.pipe';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { OrderResponseDto } from 'src/dtos/order/order.response.dto';
 @ApiTags('Users')
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -222,120 +223,7 @@ export class UsersController {
     return await this.usersService.setDefaultAddress(user.id, id);
   }
 
-  // ==================== USER ORDERS ENDPOINTS ====================
-
-  @Get('me/orders')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get current user orders with filters' })
-  @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({
-    status: 200,
-    description: 'User orders',
-    schema: {
-      type: 'object',
-      properties: {
-        data: { type: 'array', items: { type: 'object' } },
-        meta: { type: 'object' },
-      },
-    },
-  })
-  async getMyOrders(
-    @CurrentUser() user: User,
-    @Query('status') status?: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-  ) {
-
-const orders = await this.usersService.getUserOrders(user.id, {
-      status: status as any,
-      page,
-      limit,
-    });
-
-    return orders;
-  }
-
-  @Get('me/orders/stats')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get user order statistics' })
-  @ApiResponse({
-    status: 200,
-    description: 'User order statistics',
-    schema: {
-      type: 'object',
-      properties: {
-        totalOrders: { type: 'number' },
-        totalSpent: { type: 'number' },
-        pendingOrders: { type: 'number' },
-        completedOrders: { type: 'number' },
-        recentOrder: { type: 'object' },
-      },
-    },
-  })
-  async getMyOrderStats(@CurrentUser() user: User) {
-    return await this.usersService.getUserOrderStats(user.id);
-  }
-
-  @Get('me/orders/:id')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get specific order by ID (owned by user)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Order found',
-    type: Object,
-  })
-  @ApiResponse({ status: 404, description: 'Order not found' })
-  async getMyOrder(
-    @CurrentUser() user: User,
-    @Param('id') id: string,
-  ) {
-    return await this.usersService.getUserOrder(user.id, id);
-  }
-
-  // ==================== USER WISHLIST ENDPOINTS ====================
-
-  @Get('me/wishlist')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get user wishlist' })
-  @ApiResponse({
-    status: 200,
-    description: 'User wishlist',
-    type: [Object], // You'll create ProductResponseDto
-  })
-  async getMyWishlist(@CurrentUser() user: User) {
-    return await this.usersService.getUserWishlist(user.id);
-  }
-
-  @Post('me/wishlist/:productId')
-  @UseGuards(AuthGuard('jwt'))
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Add product to wishlist' })
-  @ApiResponse({ status: 201, description: 'Product added to wishlist' })
-  @ApiResponse({ status: 404, description: 'Product not found' })
-  async addToWishlist(
-    @CurrentUser() user: User,
-    @Param('productId') productId: string,
-  ) {
-    return await this.usersService.addToWishlist(user.id, productId);
-  }
-
-  @Delete('me/wishlist/:productId')
-  @UseGuards(AuthGuard('jwt'))
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Remove product from wishlist' })
-  @ApiResponse({ status: 204, description: 'Product removed from wishlist' })
-  async removeFromWishlist(
-    @CurrentUser() user: User,
-    @Param('productId') productId: string,
-  ): Promise<void> {
-    await this.usersService.removeFromWishlist(user.id, productId);
-  }
+  // Orders and wishlist endpoints moved to dedicated modules
 
   // ==================== USER NOTIFICATIONS ENDPOINTS ====================
 
@@ -361,6 +249,28 @@ const orders = await this.usersService.getUserOrders(user.id, {
       page,
       limit,
       unread,
+    });
+  }
+
+  @Get('/me/orders/stats')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get user order statistics' })
+  @ApiResponse({ status: 200, description: 'User order statistics' })
+  async getMyOrderStats(@CurrentUser() user: User) {
+    return await this.usersService.getUserOrderStats(user.id);
+  }
+
+
+  @Get('/me/orders')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get user orders' })
+  @ApiResponse({ status: 200, description: 'User orders' })
+  async getMyOrders(@CurrentUser() user: User, @Query('page') page: number = 1, @Query('limit') limit: number = 10) : Promise<{ data: OrderResponseDto[]; meta: any } > {
+    return await this.usersService.getMyOrders(user.id, {
+      page,
+      limit,
     });
   }
 

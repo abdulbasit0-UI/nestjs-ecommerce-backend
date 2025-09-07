@@ -5,9 +5,10 @@ import { Category } from '../../entities/category.entity';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
 import { AuthModule } from '../auth/auth.module';
+import { AwsModule } from '../aws/aws.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category])],
+  imports: [TypeOrmModule.forFeature([Category]), AwsModule],
   controllers: [CategoriesController],
   providers: [CategoriesService],
   exports: [CategoriesService],

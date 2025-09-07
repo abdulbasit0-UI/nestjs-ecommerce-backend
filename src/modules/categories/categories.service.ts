@@ -5,12 +5,14 @@ import { Not, Repository } from 'typeorm';
 import { Category } from '../../entities/category.entity';
 import { CreateCategoryDto } from '../../dtos/category/create-category.dto';
 import { generateSlugFromName } from '../../utils/slug.util';
+import { AwsService } from '../aws/aws.service';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly awsService: AwsService,
   ) {}
 
   async create(dto: CreateCategoryDto) {
@@ -41,6 +43,15 @@ export class CategoriesService {
   async update(id: string, dto: Partial<CreateCategoryDto>) {
     const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) throw new Error('Category not found');
+    // If image is being updated, delete old image from S3
+    if (dto.image && category.image && dto.image !== category.image) {
+      try {
+        await this.awsService.deleteFile(category.image);
+      } catch (error) {
+        console.error('Failed to delete old image:', error);
+      }
+    }
+
     Object.assign(category, dto);
     if (dto.name && dto.name !== category.name) {
       const baseSlug = generateSlugFromName(dto.name);
@@ -60,7 +71,23 @@ export class CategoriesService {
   }
 
   async remove(id: string) {
+    const category = await this.categoryRepository.findOne({ where: { id } });
+    if (!category) throw new Error('Category not found');
+
+    // Delete image from S3 if exists
+    if (category.image) {
+      try {
+        await this.awsService.deleteFile(category.image);
+      } catch (error) {
+        console.error('Failed to delete image:', error);
+      }
+    }
+
     const result = await this.categoryRepository.delete(id);
     if (result.affected === 0) throw new Error('Category not found');
+  }
+
+  async uploadImage(file: Express.Multer.File): Promise<string> {
+    return this.awsService.uploadFile(file, 'categories');
   }
 }

@@ -11,6 +11,11 @@ import { BrandsModule } from './modules/brands/brands.module';
 import { s3Config } from './config/aws.config';
 import { OrdersModule } from './modules/orders/order.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
+import { CartModule } from './modules/cart/cart.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { StatsModule } from './modules/stats/stats.module';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -19,6 +24,13 @@ import { PaymentsModule } from './modules/payments/payments.module';
       
       useFactory: typeOrmConfig,
     }),
+
+    JwtModule.register({
+      global: true, // This makes JwtService available everywhere
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
+
     AuthModule,
     UsersModule,
     CategoriesModule,
@@ -26,6 +38,10 @@ import { PaymentsModule } from './modules/payments/payments.module';
     OrdersModule,
     PaymentsModule,
     BrandsModule,
+    WishlistModule,
+    CartModule,
+    ReviewsModule,
+    StatsModule,
   ],
   providers: [
     {

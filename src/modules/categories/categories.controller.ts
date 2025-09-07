@@ -12,7 +12,10 @@ import {
   ValidationPipe,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from '../../dtos/category/create-category.dto';
@@ -73,5 +76,17 @@ export class CategoriesController {
   @ApiResponse({ status: 204, description: 'Category deleted' })
   async remove(@Param('id') id: string) {
     await this.categoriesService.remove(id);
+  }
+
+  @Post('upload-image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Upload category image (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Image uploaded' })
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    const url = await this.categoriesService.uploadImage(file);
+    return { url };
   }
 }
