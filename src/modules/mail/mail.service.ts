@@ -25,7 +25,7 @@ export class MailerService {
   async sendWelcomeEmail(email: string, name: string): Promise<void> {
     await this.sendMail({
       to: email,
-      from: 'info@nexondigital.co.za',
+      from: process.env.MAIL_USER!,
       subject: 'Welcome to Our Platform!',
       html: `<p>Hi ${name},</p>
       <p>Thank you for registering with our platform!</p>
@@ -41,7 +41,7 @@ export class MailerService {
     
     await this.sendMail({
       to: email,
-      from: 'info@nexondigital.co.za',
+      from: process.env.MAIL_USER!,
       subject: 'Verify Your Email Address',
       html: `<p>Click the link below to verify your email address:</p>
       <p><a href="${verificationUrl}">Verify Email</a></p>`,
@@ -57,7 +57,7 @@ export class MailerService {
     
     await this.sendMail({
       to: email,
-      from: 'info@nexondigital.co.za',
+      from: process.env.MAIL_USER!,
       subject: 'Reset Your Password',
       html: `<p>Click the link below to reset your password:</p>
       <p><a href="${resetUrl}">Reset Password</a></p>`,

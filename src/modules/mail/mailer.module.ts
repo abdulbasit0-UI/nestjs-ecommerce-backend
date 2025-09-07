@@ -7,17 +7,18 @@ import { MailerService } from './mail.service';
 @Module({
   imports: [
     NestMailerModule.forRoot({
+      
       transport: {
-        host: 'mail.nexondigital.co.za',
+        host: process.env.MAIL_HOST,
         port: 465,
         secure: true, // true for 465 (SSL/TLS), false for other ports
         auth: {
-          user: 'info@nexondigital.co.za',
-          pass: 'Lion@081!', // Replace with actual password
+          user: process.env.MAIL_USER, // Replace with actual email
+          pass: process.env.MAIL_PASS, // Replace with actual password
         },
       },
       defaults: {
-        from: '"Nexon Digital" <info@nexondigital.co.za>',
+        from: `"No Reply" <${process.env.MAIL_FROM}>`, // Replace with actual sender email
       },
     }),
   ],

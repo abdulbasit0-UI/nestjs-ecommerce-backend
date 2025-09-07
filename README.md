@@ -79,7 +79,7 @@ MAIL_HOST=smtp.example.com
 MAIL_PORT=465
 MAIL_USER=mailer@example.com
 MAIL_PASS=your-smtp-password
-MAIL_FROM=info@nexondigital.co.za
+MAIL_FROM=your@mail.com
 
 # AWS S3
 AWS_REGION=us-east-1
@@ -94,7 +94,7 @@ STRIPE_WEBHOOK_SECRET=whsec_xxx
 ```
 Notes:
 - TypeORM synchronize is enabled in development only (see `ormconfig.ts`). Do not use in production.
-- The Mailer default `from` is `info@nexondigital.co.za` unless overridden by `MAIL_FROM`.
+
 
 ### Run the app
 - Development (watch):

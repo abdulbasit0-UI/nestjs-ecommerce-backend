@@ -12,7 +12,7 @@ export const mailConfig = (configService: ConfigService) => ({
     },
   },
   defaults: {
-    from: 'info@nexondigital.co.za',
+    from: `"No Reply" <${process.env.MAIL_FROM}>`,
   },
   template: {
     dir: process.cwd() + '/src/templates/',
