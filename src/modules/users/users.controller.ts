@@ -101,7 +101,6 @@ export class UsersController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMyProfile(@CurrentUser() user: User): Promise<UserResponseDto> {
-    console.log("====", user);
     return await this.usersService.getUserProfile(user.id);
   }
 
@@ -255,7 +254,6 @@ const orders = await this.usersService.getUserOrders(user.id, {
       page,
       limit,
     });
-    console.log(orders);
 
     return orders;
   }

@@ -80,9 +80,7 @@ export class User {
 
   // Method to compare passwords
   async comparePassword(attempt: string): Promise<boolean> {
-    console.log(attempt, this.password);
     const result = bcrypt.compareSync(attempt, this.password);
-    console.log(result);
     return result;
   }
 

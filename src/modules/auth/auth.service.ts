@@ -81,7 +81,6 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<{ access_token: string; user: any }> {
     const { email, password } = loginDto;
-    console.log(email, password);
 
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
@@ -93,7 +92,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    console.log(isPasswordValid);
 
     if (!user.isActive) {
       throw new UnauthorizedException('Please verify your email before logging in.');

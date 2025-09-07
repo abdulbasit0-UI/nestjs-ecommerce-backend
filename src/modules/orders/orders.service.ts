@@ -42,8 +42,6 @@ export class OrdersService {
     });
 
 
-    console.log(products);
-    console.log(createDto);
 
     if (products.length !== productIds.length) {
       throw new NotFoundException('One or more products not found');
