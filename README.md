@@ -25,6 +25,12 @@ A production‑ready e‑commerce REST API built with NestJS, TypeORM, and Postg
 - Swagger (OpenAPI)
 
 
+## Frontend
+This backend pairs with a React frontend.
+- Frontend repo: https://github.com/your-org/ecommerce-frontend  
+  Replace with your actual repository URL.
+
+
 ## Getting Started
 
 ### Prerequisites
@@ -134,6 +140,119 @@ stripe listen --forward-to localhost:3000/webhook/stripe
 - Set SMTP via `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS`, and optionally `MAIL_FROM`.
 
 
+## ER Diagram (Mermaid)
+Paste this into any Mermaid‑compatible tool (e.g., `https://mermaid.live`) to render the ERD:
+```mermaid
+erDiagram
+  USERS {
+    uuid id PK
+    string name
+    string email UK
+    string password
+    enum role
+    string phone
+    string avatar
+    date dateOfBirth
+    text bio
+    json preferences
+    boolean isActive
+    timestamptz createdAt
+    timestamptz updatedAt
+  }
+
+  ADDRESSES {
+    uuid id PK
+    enum type
+    string firstName
+    string lastName
+    string company
+    string address
+    string address2
+    string city
+    string state
+    string zipCode
+    string country
+    boolean isDefault
+    uuid userId FK
+    timestamptz createdAt
+    timestamptz updatedAt
+  }
+
+  CATEGORIES {
+    uuid id PK
+    string name UK
+    string slug UK
+    string description
+    boolean isActive
+    timestamptz createdAt
+    timestamptz updatedAt
+  }
+
+  BRANDS {
+    uuid id PK
+    string name UK
+    string slug UK
+    string description
+    string logo
+    boolean isActive
+    timestamptz createdAt
+    timestamptz updatedAt
+  }
+
+  PRODUCTS {
+    uuid id PK
+    string name
+    string slug UK
+    text description
+    decimal price
+    int stock
+    json images
+    uuid category_id FK
+    uuid brand_id FK
+    boolean isActive
+    timestamptz created_at
+    timestamptz updated_at
+    decimal rating
+    int reviewCount
+  }
+
+  ORDERS {
+    uuid id PK
+    uuid userId FK
+    decimal total
+    enum status
+    string stripeSessionId
+    string stripePaymentIntentId
+    timestamptz paidAt
+    string shippingFirstName
+    string shippingLastName
+    string shippingEmail
+    string shippingPhone
+    string shippingAddress
+    string shippingCity
+    string shippingState
+    string shippingZipCode
+    string shippingCountry
+    timestamptz createdAt
+    timestamptz updatedAt
+  }
+
+  ORDER_ITEMS {
+    uuid id PK
+    uuid productId FK
+    int quantity
+    decimal price
+  }
+
+  USERS ||--o{ ADDRESSES : has
+  USERS ||--o{ ORDERS : places
+  CATEGORIES ||--o{ PRODUCTS : contains
+  BRANDS ||--o{ PRODUCTS : makes
+  PRODUCTS ||--o{ ORDER_ITEMS : included_in
+  ORDERS ||--o{ ORDER_ITEMS : contains
+```
+
+
 ## Project Structure (high level)
 ```
 src/
@@ -187,4 +306,4 @@ A `docker-compose.yml` is provided for PostgreSQL. Start the DB first or point `
 
 
 ## License
-UNLICENSED (private). Update as needed.
+MIT. See [LICENSE](./LICENSE).
