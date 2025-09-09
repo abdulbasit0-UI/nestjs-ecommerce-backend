@@ -37,6 +37,13 @@ async function bootstrap() {
     )
     .build();
 
+    if (process.env.NODE_ENV === 'development') {
+      setInterval(() => {
+        const used = process.memoryUsage();
+        console.log(`Memory: ${Math.round(used.heapUsed / 1024 / 1024 * 100) / 100} MB`);
+      }, 10000);
+    }
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
 

@@ -13,7 +13,7 @@ export const typeOrmConfig = (
   // password: configService.get<string>('DATABASE_PASSWORD'),
   // database: configService.get<string>('DATABASE_NAME'),
   entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-  synchronize: configService.get<string>('NODE_ENV') === 'development', // Never use in prod
+  synchronize: false, // Never use in prod
   // logging: configService.get<string>('NODE_ENV') === 'development',
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
   extra: {
