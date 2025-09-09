@@ -1,18 +1,15 @@
 // src/main.ts
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe, Logger } from '@nestjs/common';
-import { RolesGuard } from './common/guards/roles.guard';
-import { ConfigService } from '@nestjs/config';
-import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
   });
-  const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT') || 3000;
+
+  const port = process.env.PORT || 3000;
 
   // Enable CORS
   app.enableCors();
@@ -47,8 +44,6 @@ async function bootstrap() {
     Logger.log(`🚀 Server running on http://localhost:${port}`, 'Bootstrap');
     Logger.log(`📘 Swagger: http://localhost:${port}/api-docs`, 'Bootstrap');
   });
-  Logger.log(`🚀 Server running on http://localhost:${port}`, 'Bootstrap');
-  Logger.log(`📘 Swagger: http://localhost:${port}/api-docs`, 'Bootstrap');
 }
 
 bootstrap();
