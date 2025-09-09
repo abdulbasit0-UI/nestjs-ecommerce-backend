@@ -280,14 +280,17 @@ export class UsersService {
     });
 
     const totalOrders = orders.length;
-    const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
-    const pendingOrders = orders.filter(
+    const totalSpent = orders.reduce((sum, order) => sum + parseFloat(order.total.toString()), 0);
+    const pendingOrders = orders.filter(  
       (o) => o.status === OrderStatus.PENDING,
     ).length;
     const completedOrders = orders.filter(
       (o) => o.status === OrderStatus.SHIPPED,
     ).length;
     const recentOrder = orders[0];
+
+    console.log(totalOrders, totalSpent, pendingOrders, completedOrders, recentOrder);
+    console.log(orders);
 
     return {
       totalOrders,
