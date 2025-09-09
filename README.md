@@ -2,7 +2,7 @@
 
 A production‑ready e‑commerce REST API built with NestJS, TypeORM, and PostgreSQL. Includes authentication, product/catalog management, orders and Stripe payments, file uploads to AWS S3, and transactional emails.
 
-[![E-commerce Store Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://youtu.be/U100Djv2lOU)
+[![E-commerce Store Demo](https://i9.ytimg.com/vi_webp/U100Djv2lOU/mqdefault.webp?v=68c0752c&sqp=CIDpgcYG&rs=AOn4CLA2_z5_GaMVYxMldWv1T5Vrg6aqVA)](https://youtu.be/U100Djv2lOU)
 
 ## Features
 - Authentication and authorization with JWT (access + email verification + password reset)
